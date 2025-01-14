@@ -5,10 +5,11 @@ namespace PruebaCriptografia
 {
     public static class Encriptador
     {
-        public static string Encriptar(string plainText, string key)
+        public static string EncriptarAES(string plainText, string key)
         {
             try
             {
+                if (string.IsNullOrEmpty(plainText) || string.IsNullOrEmpty(key)) throw new ArgumentNullException();
                 // Instancia el objeto que posee el algoritmo de encriptación Aes
                 using Aes aes = Aes.Create();
                 //Asigna la llave de encriptación a partir de la llave ingresada
@@ -43,10 +44,11 @@ namespace PruebaCriptografia
             }
         }
 
-        public static string Desencriptar(string cipherText, string key)
+        public static string DesencriptarAES(string cipherText, string key)
         {
             try
             {
+                if(string.IsNullOrEmpty(cipherText) || string.IsNullOrEmpty(key)) throw new ArgumentNullException();
                 //Convierte el string de base 64 a un arreglo de bytes
                 byte[] fullCipher = Convert.FromBase64String(cipherText);
                 //Crea un arreglo de bytes para el vector de inicialización
@@ -78,7 +80,52 @@ namespace PruebaCriptografia
                 //Devuelve el texto desencriptado
                 return sr.ReadToEnd();
             }
-            catch(Exception e)
+            catch (Exception e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(e.Message);
+                Console.ForegroundColor = ConsoleColor.White;
+                return "";
+            }
+        }
+
+        public static string EncriptarRSA(string textoplano, string llavePublica)
+        {
+            try
+            {
+                if(string.IsNullOrEmpty(textoplano) || string.IsNullOrEmpty(llavePublica)) throw new ArgumentNullException(nameof(textoplano));
+                using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+                {
+                    rsa.FromXmlString(llavePublica);
+                    byte[] DatosEncriptar = Encoding.UTF8.GetBytes(textoplano);
+                    return Convert.ToBase64String(rsa.Encrypt(DatosEncriptar, false));
+                }
+            }
+            catch (Exception e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(e.Message);
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.ReadKey();
+                return "";
+            }
+            
+        }
+
+        public static string DesencriptarRSA(string textoEncriptado, string llavePrivada)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(textoEncriptado) || string.IsNullOrEmpty(llavePrivada)) throw new ArgumentNullException(nameof(textoEncriptado));
+                using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+                {
+                    rsa.FromXmlString(llavePrivada);
+                    byte[] DatosDesencriptar = Convert.FromBase64String(textoEncriptado);
+                    byte[] DatosDesencriptados = rsa.Decrypt(DatosDesencriptar, false);
+                    return Encoding.UTF8.GetString(DatosDesencriptados);
+                }
+            }
+            catch (Exception e)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(e.Message);
